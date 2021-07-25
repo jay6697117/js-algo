@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <script>
+      // 用 Map 来缓存；
+      // 如果请求在pending，返回并继续等待
+      // 请求用 setTimeout 模拟
+
+      const cache = new Map();
+      console.log(`cache - 1:`, cache); // 1
+
+      // test
+      cacheRequest('url1', { method: 'get' }).then(res => {
+        console.log(`res 1:`, res);
+      });
+
+      cacheRequest('url1', { method: 'get' }).then(res => {
+        console.log(`res 2:`, res);
+      });
+
+      cacheRequest('url2', { method: 'get' }).then(res => {
+        console.log(`res 3:`, res);
+      });
+
+      setTimeout(() => {
+        cacheRequest('url1', { method: 'get' }).then(res => {
+          console.log(`res 4:`, res);
+        });
+      }, 4000);
+
+      function request(url, option) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            return resolve({ data: option });
+            // return reject(new Error('报错啦'))
+          }, 2000);
+        });
+      }
+      function cacheRequest(url, option) {
+        let key = `${url}:${option.method}`;
+        console.log('-------- 1 --------')
+        console.log(`cacheRequest key -2:`, key); // 多次执行
+        // 有缓存
+        if (cache.has(key)) {
+          console.log('从缓存取');
+          if (cache.get(key).status === 'pending') {
+            return cache.get(key).myWait;
+          }
+          return Promise.resolve(cache.get(key).data);
+        } else {
+          console.log('发请求 - 3'); // 2
+          // 无缓存，发起真的请求
+          let requestApi = request(url, option);
+          console.log(`requestApi -4`, requestApi);
+          cache.set(key, { status: 'pending', myWait: requestApi }); // 缓存
+          console.log(`cache - 5:`, cache); // 3
+          return requestApi
+            .then(res => {
+              console.log('-------- 2 --------')
+              console.log(`res -6:`, res);
+              cache.set(key, { status: 'success', data: res });
+              return Promise.resolve(res);
+            })
+            .catch(err => {
+              console.log(`err -7:`, err);
+              cache.set(key, { status: 'fall', data: err });
+              return Promise.reject(err);
+            });
+        }
+      }
+    </script>
+  </body>
+</html>

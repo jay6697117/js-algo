@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>并发请求控制</title>
+    <style>
+      img {
+        display: block;
+        height: 450px;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body></body>
+  <script>
+    // test
+    const urls = [
+      'url:1',
+      'url:2',
+      'url:3',
+      'url:4',
+      'url:5',
+      'url:6',
+      'url:7',
+      'url:8',
+      'url:9',
+      'url:10',
+      'url:11',
+      'url:12'
+    ];
+    const length = urls.length;
+    const batchnum = length; // 全局变量
+    const timeout = 2000; // 全局变量
+    let currentCount = 0; // 全局变量
+    try {
+      batchGet(urls, batchnum, timeout).then(response => {
+        console.log('finish 002:', response);
+      });
+    } catch (error) {
+      console.log(`error:`, error);
+    }
+
+    function fetchData(url, timeout) {
+      currentCount++;
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // throw new Error('throw error')
+          // return reject(new Error('reject error'));
+          return resolve(url + ' -- result');
+        }, timeout);
+      });
+      // return new Promise(resolve => {
+      //   setTimeout(() => {
+      //     resolve(url + 'result');
+      //   }, 1000);
+      // });
+      // return Promise.race([
+      //   new Promise((resolve) => {
+      //     setTimeout(() => {
+      //       resolve(url + "result"); // 模拟请求获得数据
+      //     }, Math.random() * timeout * 2);
+      //   }),
+      //   new Promise((resolve) => {
+      //     setTimeout(() => {
+      //       resolve(null);
+      //     }, timeout);
+      //   }),
+      // ]);
+    }
+
+    function batchGet(urlLists, batchnum, timeout) {
+      console.log(`batchGet urlLists:`, urlLists);
+      const recursion = urlArr => {
+        console.log(`urlArr 01:`, urlArr);
+        return fetchData(urlArr.shift(), timeout).then(res => {
+          console.log(`urlArr 02:`, urlArr);
+          console.log('-------------');
+          console.log('当前并发量:', currentCount--);
+          console.log('data:', res);
+          if (urlArr.length > 0) {
+            return recursion(urlArr);
+          }
+          return Promise.resolve(`finish 001: ${res}`);
+        });
+      };
+      let asyncList = [];
+      let listCopy = [].concat(urlLists); // 浅拷贝
+      console.log(`batchGet listCopy:`, listCopy);
+      console.log(`batchGet batchnum:`, batchnum);
+      while (batchnum--) {
+        asyncList.push(recursion(listCopy));
+      }
+      console.log(`batchGet asyncList:`, asyncList); // Promise数组
+      return Promise.all(asyncList);
+    }
+  </script>
+</html>

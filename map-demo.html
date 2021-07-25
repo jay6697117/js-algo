@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="demo"></div>
+    <script>
+      // const data = [];
+      // const demo = document.getElementById('demo');
+      // console.log(`demo:`, demo);
+      // console.log(`demo.toString():`, demo.toString());
+      // data[demo] = 'demo dom string';
+      // console.log(`data:`, data);
+      // console.log(`data['[object HTMLDivElement]']:`, data['[object HTMLDivElement]']);
+      const m = new Map();
+      const o = { p: 'hello world' };
+      m.set(o, 'content');
+      console.log(`m 1:`, m);
+      console.log(`m.has(o)`, m.has(o));
+      console.log(`m.delete(o)`, m.delete(o));
+      console.log(`m.has(o)`, m.has(o));
+      console.log(`m: 2`, m);
+    </script>
+  </body>
+</html>
